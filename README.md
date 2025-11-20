@@ -11,25 +11,21 @@ sisaxena@unc.edu, jjips@ad.unc.edu, nhule@unc.edu, jql@ad.unc.edu
 
 ***
 
-## Abstract
+## 1. Abstract
 
-This project examines how national environmental risks and clinical health statistics relate to economic performance, measured by country-level GDP. Using a consolidated dataset of environmental, health, demographic, and economic indicators, we train linear regression, logistic regression, ridge regression, and stochastic gradient descent models to identify key predictors of GDP. We then use the Anthropic API to summarize model outputs and highlight the most important patterns and associations.
+This project examines how national environmental risks and clinical health statistics relate to economic performance, measured by country level GDP. Using a consolidated dataset of environmental, health, demographic, and economic indicators, we train linear regression, logistic regression, ridge regression, and stochastic gradient descent models to identify key predictors of GDP. We then use the Anthropic API to summarize model outputs and highlight major patterns.
 
 ***
 
-## 1. Introduction
-
-This project examines how national environmental risk factors and clinical health statistics relate to economic performance, measured through country level GDP. Traditional economic models focus on capital, labor, and institutions, but growing evidence suggests that environmental pressures and population health also influence long term development. Using a consolidated dataset combining environmental, clinical, demographic, and GDP indicators, we train several supervised learning models and use the Anthropic API to interpret the resulting patterns.
-
 ## 2. Preparing Data
 
-We merged three datasets covering the years 1990 to 2009:
+We merged three datasets for 1990 to 2009:
 
-* WHO risk factor mortality data (subset of 15 selected variables)
-* Population data from HYDE, Gapminder, and UN WPP
+* WHO risk factor mortality data
+* Global population estimates from HYDE, Gapminder, and UN WPP
 * GDP data from WITS
 
-Because the datasets used different naming conventions, all country names were standardized before merging. We removed territories, regions, and very small or incomplete populations to improve data quality. The final dataset contains 35 variables and 1,981 country year rows.
+Country names were standardized across sources, and we removed territories and very small or incomplete populations. The final dataset contains 35 variables and 1,981 country year rows.
 
 ***
 
@@ -38,29 +34,38 @@ Because the datasets used different naming conventions, all country names were s
 We implemented three supervised learning models:
 
 Linear regression with stochastic gradient descent
-Used to estimate GDP assuming a linear relationship between predictors and economic output.
 
-Logistic regression
-Used to classify each country year as high or low GDP based on logistic loss.
+Logistic regression for high versus low GDP classification
 
-Ridge regression
-Applied as a regularized linear model to stabilize coefficient magnitudes.
+Ridge regression as a regularized linear baseline
 
-The models were trained on a split of the dataset and evaluated using MSE, R squared, accuracy, and F1 scores. Coefficient magnitudes were examined to identify influential variables. To enhance interpretability, model outputs were formatted as JSON and summarized using the Anthropic Claude API, guided by a structured prompt to ensure academic clarity.
+Models were trained on a train test split and evaluated using MSE, R squared, accuracy, and F1 score. Coefficient magnitudes were used to study feature influence. Model outputs were also formatted as JSON and summarized with the Anthropic Claude API.
 
 ## 4. Results
 
-Our regression models showed that linear regression performed best, explaining about 47% of the variance in GDP, while ridge and SGD-based models performed noticeably worse. In classification, logistic regression achieved strong performance, reaching roughly 85% accuracy when predicting whether a country belonged to a high- or low-GDP group. Models using both environmental and clinical features consistently outperformed those using either group alone. LLM-generated summaries helped interpret which features were most influential and how risk-factor patterns differed across GDP levels.
+Regression (GDP as continuous):
+
+Linear: MSE ≈ 2.14 × 10²³, R² ≈ 0.47
+
+Ridge: MSE ≈ 2.50 × 10²³, R² ≈ 0.37
+
+SGD: MSE ≈ 3.04 × 10²³, R² ≈ 0.24
+
+Classification (high vs low GDP):
+
+Logistic (liblinear): accuracy ≈ 0.85, F1 ≈ 0.86
+
+Logistic (gradient descent): accuracy ≈ 0.84, F1 ≈ 0.82
+
+Generally stronger performance on higher-GDP countries than on low-GDP countries.  
+LLM-based interpretation (Anthropic API) helped summarize which features were most influential
 
 ***
 
-## 5. Discussion
+## 5. Discussion and Conclusion
 
-During development, we encountered missing values, inconsistent formatting, and kernel instability that required additional cleaning and preprocessing. SGD based linear regression initially produced unstable outputs until learning rates and iteration counts were adjusted. Ridge regression provided more stable and interpretable coefficients. The Anthropic API summaries helped contextualize model behavior, but limitations remain: the analysis is correlational, lacks institutional and political variables, and does not capture dynamic changes over time. These constraints highlight the need for richer datasets and more advanced causal or time series models.
+Models perform better on high GDP countries than on low GDP countries, and the analysis is correlational rather than causal. Still, environmental and clinical indicators show meaningful statistical relationships with GDP, and LLM based interpretation helps highlight which features distinguish high and low GDP profiles.
 
-## 6. Conclusion
-
-Environmental and clinical factors show meaningful statistical relationships with national GDP in our models. While the findings do not imply causation, they support the idea that public health and environmental conditions provide informative signals about economic outcomes. By combining regression based modeling with LLM supported interpretation, this project offers a foundation for future work exploring how global health and environmental vulnerabilities interact with long term economic development.
 
 ***
 
