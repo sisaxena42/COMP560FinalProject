@@ -50,6 +50,32 @@ FEATURE_COLUMNS: List[str] = [
     "Population",
 ]
 
+# ENV_FEATURES = [
+#     "Unsafe water source",
+#     "Household air pollution from solid fuels",
+#     "Secondhand smoke",
+#     "Air pollution",
+#     "Outdoor air pollution",
+# ]
+# CLINICAL_FEATURES = [
+#     "Child wasting",
+#     "Child stunting",
+#     "Low birth weight for gestation",
+#     "High fasting plasma glucose",
+#     # "High total cholesterol",
+#     "High body-mass index",
+#     "High systolic blood pressure",
+#     "Low bone mineral density",
+#     "Iron deficiency",
+#     "Vitamin A deficiency",
+# ]
+# FEATURE_COLUMNS = CLINICAL_FEATURES + ENV_FEATURES
+
+# FEATURE_SETS = {
+#     "all": FEATURE_COLUMNS,
+#     "clinical": CLINICAL_FEATURES,
+#     "environmental": ENV_FEATURES,
+# }
 
 def load_raw_data(path: str = DATA_PATH_DEFAULT) -> pd.DataFrame:
     """Load the raw merged CSV and do minimal cleaning."""
@@ -168,9 +194,19 @@ def train_test_split_all(
     test_size: float = 0.2,
     random_state: int = 42,
 ):
-    """Produce train/test splits for both regression and classification."""
-    X = make_feature_matrix(df, feature_cols)
-    y_reg, y_clf = get_targets(df)
+    """
+    Produce train/test splits for both regression and classification.
+
+    Any row that has a NaN in the selected feature columns or in GDP/high_gdp
+    is dropped before splitting.
+    """
+    # columns that must be present and non-NaN
+    cols_required = list(feature_cols) + ["GDP", "high_gdp"]
+
+    df_clean = df.dropna(subset=cols_required).reset_index(drop=True)
+
+    X = make_feature_matrix(df_clean, feature_cols)
+    y_reg, y_clf = get_targets(df_clean)
 
     X_train, X_test, y_reg_train, y_reg_test, y_clf_train, y_clf_test = train_test_split(
         X,
@@ -184,11 +220,15 @@ def train_test_split_all(
     return X_train, X_test, y_reg_train, y_reg_test, y_clf_train, y_clf_test
 
 
+
+
 def run_regression_models(
     df: pd.DataFrame,
+    feature_set: str = "all",
     models: List[str] = ("linear", "sgd"),
 ) -> Dict[str, RegressionResult]:
-    """Fit regression models, return metrics on test set."""
+    """Fit regression models on a given feature set; return metrics on test set."""
+    feature_cols = FEATURE_SETS[feature_set]
     (
         X_train,
         X_test,
@@ -196,8 +236,7 @@ def run_regression_models(
         y_test,
         _,
         _,
-    ) = train_test_split_all(df)
-
+    ) = train_test_split_all(df, feature_cols=feature_cols)
     results: Dict[str, RegressionResult] = {}
 
     for name in models:
@@ -213,11 +252,14 @@ def run_regression_models(
     return results
 
 
+
 def run_classification_models(
     df: pd.DataFrame,
+    feature_set: str = "all",
     models: List[str] = ("logreg_gd", "logreg_liblinear"),
 ) -> Dict[str, ClassificationResult]:
-    """Fit classification models, return metrics on test set."""
+    """Fit classification models on a given feature set; return metrics on test set."""
+    feature_cols = FEATURE_SETS[feature_set]
     (
         X_train,
         X_test,
@@ -225,7 +267,7 @@ def run_classification_models(
         _,
         y_train,
         y_test,
-    ) = train_test_split_all(df)
+    ) = train_test_split_all(df, feature_cols=feature_cols)
 
     results: Dict[str, ClassificationResult] = {}
 
