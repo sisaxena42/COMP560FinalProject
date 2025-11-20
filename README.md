@@ -50,7 +50,21 @@ The models were trained on a split of the dataset and evaluated using MSE, R squ
 
 ## 4. Results
 
-(Results will be added here.)
+We evaluated both regression and classification models using environmental and clinical features:
+
+- **Regression (GDP as continuous):**  
+  - Linear: MSE ≈ 2.14 × 10²³, R² ≈ 0.47  
+  - Ridge: MSE ≈ 2.50 × 10²³, R² ≈ 0.37  
+  - SGD: MSE ≈ 3.04 × 10²³, R² ≈ 0.24  
+  → Simple linear regression performed best  
+  → Across methods, generally stronger performance on higher-GDP countries than on low-GDP countries.
+
+- **Classification (high vs low GDP):**  
+  - Logistic (liblinear): accuracy ≈ 0.85, F1 ≈ 0.86  
+  - Logistic (GD): accuracy ≈ 0.84, F1 ≈ 0.82  
+  → Models reliably distinguish between high- and low-GDP countries.
+
+Models using **combined environmental + clinical features** outperformed those using either group alone. LLM-based interpretation (Anthropic API) helped summarize which features were most influential and how they differed between high- and low-GDP profiles.
 
 ***
 
