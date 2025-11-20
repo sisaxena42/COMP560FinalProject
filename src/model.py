@@ -17,65 +17,65 @@ from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, f1_sco
 DATA_PATH_DEFAULT = "data/merged.csv"
 
 # All numeric feature columns we want to use (drop IDs / strings / messy columns)
-FEATURE_COLUMNS: List[str] = [
-    "Unsafe water source",
-    "Unsafe sanitation",
-    "No access to handwashing facility",
-    "Household air pollution from solid fuels",
-    "Non-exclusive breastfeeding",
-    "Discontinued breastfeeding",
-    "Child wasting",
-    "Child stunting",
-    "Low birth weight for gestation",
-    "Secondhand smoke",
-    "Alcohol use",
-    "Drug use",
-    "Diet low in fruits",
-    "Diet low in vegetables",
-    "Unsafe sex",
-    "Low physical activity",
-    "High fasting plasma glucose",
-    # "High total cholesterol",  # has many missing values – easiest is to drop for now
-    "High body-mass index",
-    "High systolic blood pressure",
-    "Smoking",
-    "Iron deficiency",
-    "Vitamin A deficiency",
-    "Low bone mineral density",
-    "Air pollution",
-    "Outdoor air pollution",
-    "Diet high in sodium",
-    "Diet low in whole grains",
-    "Diet low in nuts and seeds",
-    "Population",
-]
-
-# ENV_FEATURES = [
+# FEATURE_COLUMNS = [
 #     "Unsafe water source",
+#     "Unsafe sanitation",
+#     "No access to handwashing facility",
 #     "Household air pollution from solid fuels",
-#     "Secondhand smoke",
-#     "Air pollution",
-#     "Outdoor air pollution",
-# ]
-# CLINICAL_FEATURES = [
+#     "Non-exclusive breastfeeding",
+#     "Discontinued breastfeeding",
 #     "Child wasting",
 #     "Child stunting",
 #     "Low birth weight for gestation",
+#     "Secondhand smoke",
+#     "Alcohol use",
+#     "Drug use",
+#     "Diet low in fruits",
+#     "Diet low in vegetables",
+#     "Unsafe sex",
+#     "Low physical activity",
 #     "High fasting plasma glucose",
-#     # "High total cholesterol",
+#     # "High total cholesterol",  # has many missing values – easiest is to drop for now
 #     "High body-mass index",
 #     "High systolic blood pressure",
-#     "Low bone mineral density",
+#     "Smoking",
 #     "Iron deficiency",
 #     "Vitamin A deficiency",
+#     "Low bone mineral density",
+#     "Air pollution",
+#     "Outdoor air pollution",
+#     "Diet high in sodium",
+#     "Diet low in whole grains",
+#     "Diet low in nuts and seeds",
+#     "Population",
 # ]
-# FEATURE_COLUMNS = CLINICAL_FEATURES + ENV_FEATURES
 
-# FEATURE_SETS = {
-#     "all": FEATURE_COLUMNS,
-#     "clinical": CLINICAL_FEATURES,
-#     "environmental": ENV_FEATURES,
-# }
+ENV_FEATURES = [
+    "Unsafe water source",
+    "Household air pollution from solid fuels",
+    "Secondhand smoke",
+    "Air pollution",
+    "Outdoor air pollution",
+]
+CLINICAL_FEATURES = [
+    "Child wasting",
+    "Child stunting",
+    "Low birth weight for gestation",
+    "High fasting plasma glucose",
+    # "High total cholesterol",
+    "High body-mass index",
+    "High systolic blood pressure",
+    "Low bone mineral density",
+    "Iron deficiency",
+    "Vitamin A deficiency",
+]
+FEATURE_COLUMNS = CLINICAL_FEATURES + ENV_FEATURES
+
+FEATURE_SETS = {
+    "all": FEATURE_COLUMNS,
+    "clinical": CLINICAL_FEATURES,
+    "environmental": ENV_FEATURES,
+}
 
 def load_raw_data(path: str = DATA_PATH_DEFAULT) -> pd.DataFrame:
     """Load the raw merged CSV and do minimal cleaning."""
@@ -225,7 +225,7 @@ def train_test_split_all(
 def run_regression_models(
     df: pd.DataFrame,
     feature_set: str = "all",
-    models: List[str] = ("linear", "sgd"),
+    models: List[str] = ("linear", "sgd", "ridge"),
 ) -> Dict[str, RegressionResult]:
     """Fit regression models on a given feature set; return metrics on test set."""
     feature_cols = FEATURE_SETS[feature_set]
@@ -282,3 +282,58 @@ def run_classification_models(
         results[name] = ClassificationResult(model_name=name, accuracy=acc, f1=f1)
 
     return results
+
+def compare_regression_feature_sets(
+    df: pd.DataFrame,
+    feature_sets=("all", "clinical", "environmental"),
+    models: List[str] = ("linear", "sgd"),
+) -> pd.DataFrame:
+    """
+    Run regression models on multiple feature sets and return a comparison table.
+
+    Each row in the output DataFrame is:
+      feature_set | model | mse | r2
+    """
+    rows = []
+
+    for fs in feature_sets:
+        res_dict = run_regression_models(df, feature_set=fs, models=models)
+        for model_name, res in res_dict.items():
+            rows.append(
+                {
+                    "feature_set": fs,
+                    "model": model_name,
+                    "mse": res.mse,
+                    "r2": res.r2,
+                }
+            )
+
+    return pd.DataFrame(rows)
+
+
+def compare_classification_feature_sets(
+    df: pd.DataFrame,
+    feature_sets=("all", "clinical", "environmental"),
+    models: List[str] = ("logreg_gd", "logreg_liblinear"),
+) -> pd.DataFrame:
+    """
+    Run classification models on multiple feature sets and return a comparison table.
+
+    Each row in the output DataFrame is:
+      feature_set | model | accuracy | f1
+    """
+    rows = []
+
+    for fs in feature_sets:
+        res_dict = run_classification_models(df, feature_set=fs, models=models)
+        for model_name, res in res_dict.items():
+            rows.append(
+                {
+                    "feature_set": fs,
+                    "model": model_name,
+                    "accuracy": res.accuracy,
+                    "f1": res.f1,
+                }
+            )
+
+    return pd.DataFrame(rows)

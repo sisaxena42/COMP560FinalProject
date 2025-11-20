@@ -6,10 +6,15 @@ import json
 import os
 from typing import Any, Dict
 
-from openai import OpenAI
+from dotenv import load_dotenv
+from anthropic import Anthropic
+
+load_dotenv()
+
+client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
 # Uses OPENAI_API_KEY from environment
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+# client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 
 def summarize_results(summary_data: Dict[str, Any], max_words: int = 250) -> str:
@@ -34,7 +39,8 @@ def summarize_results(summary_data: Dict[str, Any], max_words: int = 250) -> str
     prompt = f"""
 You are helping write the Results section of a short machine learning project report.
 
-The project predicts country-level GDP from environmental and risk-factor features
+The project predicts country-level GDP from environmental risk-factor features as
+well as clinical statistic risk-factor features
 using basic ML models (regression and possibly classification).
 
 Here is a JSON dump of the key results, metrics, and feature importances:
@@ -52,11 +58,13 @@ Do NOT mention JSON, code, notebooks, or implementation details.
 Focus only on the analysis and findings.
 """
 
-    response = client.responses.create(
-        model="gpt-4o-mini",  # or "gpt-5.1" if you have access and want fancier
-        instructions="You are a careful data-science writing assistant.",
-        input=prompt,
+    response = client.messages.create(
+        model="claude-3-haiku-20240307",
+        max_tokens=300,
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
     )
 
     # New python client gives a convenience property for text output
-    return response.output_text
+    return response.content[0].text
