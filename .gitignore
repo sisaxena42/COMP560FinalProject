@@ -1,0 +1,57 @@
+# ----------------------------
+# Python
+# ----------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+
+# Virtual environments
+venv/
+env/
+.venv/
+.python-version
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Jupyter Notebook cache
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ----------------------------
+# Environment variables
+# ----------------------------
+.env
+.env.*
+*.env
+
+# DO NOT COMMIT API KEYS
+# (Claude, OpenAI, HuggingFace, etc.)
+secrets.json
+
+# ----------------------------
+# VS Code / Dev Containers
+# ----------------------------
+.vscode/
+.devcontainer/.env
+.devcontainer/Dockerfile
+.devcontainer/devcontainer.json
+
+# Sometimes Docker generates logs:
+**/.docker/
+docker-compose.override.yml
+
+# ----------------------------
+# OS-specific files
+# ----------------------------
+.DS_Store
+Thumbs.db
+
+
+
+# If you want to keep merged.csv public, delete the above rule.
+# Otherwise it will NOT be uploaded.
