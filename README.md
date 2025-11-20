@@ -50,7 +50,7 @@ The models were trained on a split of the dataset and evaluated using MSE, R squ
 
 ## 4. Results
 
-(Results will be added here.)
+Our regression models showed that linear regression performed best, explaining about 47% of the variance in GDP, while ridge and SGD-based models performed noticeably worse. In classification, logistic regression achieved strong performance, reaching roughly 85% accuracy when predicting whether a country belonged to a high- or low-GDP group. Models using both environmental and clinical features consistently outperformed those using either group alone. LLM-generated summaries helped interpret which features were most influential and how risk-factor patterns differed across GDP levels.
 
 ***
 
