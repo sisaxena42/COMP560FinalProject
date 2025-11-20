@@ -66,5 +66,5 @@ Focus only on the analysis and findings.
         ]
     )
 
-    # New python client gives a convenience property for text output
+    
     return response.content[0].text

@@ -10,7 +10,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
-from sklearn.linear_model import LinearRegression, SGDRegressor, SGDClassifier, LogisticRegression
+from sklearn.linear_model import LinearRegression, SGDRegressor, SGDClassifier, LogisticRegression, Ridge
 from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, f1_score
 
 
@@ -84,13 +84,12 @@ def load_raw_data(path: str = DATA_PATH_DEFAULT) -> pd.DataFrame:
     # Clean Calories (string with commas) if you decide to use it later
     if "Calories" in df.columns:
         df["Calories"] = (
-            df["Calories"]
+            df["Calories"] #we needed up not using calories
             .astype(str)
             .str.replace(",", "", regex=False)
         )
         df["Calories"] = pd.to_numeric(df["Calories"], errors="coerce")
 
-    # Drop rows with missing GDP (we can't train on them)
     df = df.dropna(subset=["GDP"]).reset_index(drop=True)
 
     return df
@@ -138,17 +137,23 @@ class ClassificationResult:
 
 def make_regression_pipeline(model: str = "linear"):
     """
-    model: "linear" (closed-form linear regression) or "sgd" (gradient descent).
+    model:
+      - "linear": ordinary least squares linear regression
+      - "ridge":  L2-regularized linear regression
+      - "sgd":    linear regression via SGD (gradient descent)
     """
     if model == "linear":
         est = LinearRegression()
+    elif model == "ridge":
+        # alpha is the strength of L2 regularization – you can tune this
+        est = Ridge(alpha=1.0, random_state=42)
     elif model == "sgd":
-        # SGDRegressor uses (stochastic) gradient descent under the hood
         est = SGDRegressor(
             max_iter=2000,
             tol=1e-3,
             penalty="l2",
             learning_rate="invscaling",
+            random_state=42,
         )
     else:
         raise ValueError(f"Unknown regression model: {model}")
